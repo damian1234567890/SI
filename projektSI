@@ -1,0 +1,266 @@
+from tensorflow.keras.datasets import fashion_mnist
+(X_train, Y_train), (X_test, Y_test) = fashion_mnist.load_data()
+
+import keras
+num_classes = 10
+Y_train = keras.utils.to_categorical(Y_train, num_classes)
+Y_test = keras.utils.to_categorical(Y_test, num_classes)
+
+X_train = X_train.reshape(-1,28,28,1)
+X_test = X_test.reshape(-1,28,28,1)
+
+print('Fashion MNIST Dataset Shape:')
+print('X_train: ' + str(X_train.shape))
+print('Y_train: ' + str(Y_train.shape))
+print('X_test:  '  + str(X_test.shape))
+print('Y_test:  '  + str(Y_test.shape))
+
+X_train = X_train.astype('float32')
+X_test = X_test.astype('float32')
+X_train = X_train / 255.
+X_test = X_test / 255.
+
+from sklearn.model_selection import train_test_split
+X_train,valid_X,Y_train,valid_label = 
+train_test_split(X_train, Y_train, test_size=0.2, random_state=13)
+
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Conv2D, MaxPooling2D
+from keras.layers.advanced_activations import LeakyReLU
+
+fashion_model = Sequential()
+fashion_model.add(Conv2D(32, 
+kernel_size=(3, 3),activation='linear',input_shape=(28,28,1),padding='same'))
+fashion_model.add(LeakyReLU(alpha=0.1))
+fashion_model.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+fashion_model.add(LeakyReLU(alpha=0.1))
+fashion_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+fashion_model.add(LeakyReLU(alpha=0.1))
+fashion_model.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model.add(Flatten())
+fashion_model.add(Dense(128, activation='linear'))
+fashion_model.add(LeakyReLU(alpha=0.1))
+fashion_model.add(Dense(num_classes, activation='softmax'))
+
+fashion_model.compile(loss=keras.losses.categorical_crossentropy,
+ optimizer=keras.optimizers.Adam(),metrics=['accuracy'])
+
+batch_size = 64
+epochs = 20
+
+fashion_train = fashion_model.fit(X_train, Y_train,
+ batch_size=batch_size,epochs=epochs,verbose=1,
+ validation_data=(valid_X, valid_label))
+
+test_eval = fashion_model.evaluate(X_test, Y_test, verbose=0)
+print('Test loss:', test_eval[0])
+print('Test accuracy:', test_eval[1])
+
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+accuracy = fashion_train.history['accuracy']
+val_accuracy = fashion_train.history['val_accuracy']
+loss = fashion_train.history['loss']
+val_loss = fashion_train.history['val_loss']
+epochs = range(len(accuracy))
+plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
+plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
+plt.title('Training and validation accuracy')
+plt.legend()
+plt.figure()
+plt.plot(epochs, loss, 'bo', label='Training loss')
+plt.plot(epochs, val_loss, 'b', label='Validation loss')
+plt.title('Training and validation loss')
+plt.legend()
+plt.show()
+
+# model with Dropouts
+fashion_model_D = Sequential()
+fashion_model_D.add(Conv2D(32, 
+kernel_size=(3, 3),activation='linear',padding='same',input_shape=(28,28,1)))
+fashion_model_D.add(LeakyReLU(alpha=0.1))
+fashion_model_D.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model_D.add(Dropout(0.25))
+fashion_model_D.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+fashion_model_D.add(LeakyReLU(alpha=0.1))
+fashion_model_D.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D.add(Dropout(0.25))
+fashion_model_D.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+fashion_model_D.add(LeakyReLU(alpha=0.1))                  
+fashion_model_D.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D.add(Dropout(0.4))
+fashion_model_D.add(Flatten())
+fashion_model_D.add(Dense(128, activation='linear'))
+fashion_model_D.add(LeakyReLU(alpha=0.1))           
+fashion_model_D.add(Dropout(0.3))
+fashion_model_D.add(Dense(num_classes, activation='softmax'))
+
+fashion_model_D.compile(loss=keras.losses.categorical_crossentropy,
+ optimizer=keras.optimizers.Adam(),metrics=['accuracy'])
+
+batch_size = 64
+epochs = 20
+
+fashion_train_dropout = fashion_model_D.fit(X_train, Y_train,
+ batch_size=batch_size,epochs=epochs,verbose=1,
+validation_data=(valid_X, valid_label))
+
+# model with Dropouts 2 bigger dropouts
+fashion_model_D_2 = Sequential()
+fashion_model_D_2.add(Conv2D(32, 
+kernel_size=(3, 3),activation='linear',padding='same',input_shape=(28,28,1)))
+fashion_model_D_2.add(LeakyReLU(alpha=0.1))
+fashion_model_D_2.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model_D_2.add(Dropout(0.55))
+fashion_model_D_2.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+fashion_model_D_2.add(LeakyReLU(alpha=0.1))
+fashion_model_D_2.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_2.add(Dropout(0.55))
+fashion_model_D_2.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+fashion_model_D_2.add(LeakyReLU(alpha=0.1))                  
+fashion_model_D_2.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_2.add(Dropout(0.75))
+fashion_model_D_2.add(Flatten())
+fashion_model_D_2.add(Dense(128, activation='linear'))
+fashion_model_D_2.add(LeakyReLU(alpha=0.1))           
+fashion_model_D_2.add(Dropout(0.6))
+fashion_model_D_2.add(Dense(num_classes, activation='softmax'))
+
+
+# model with Dropouts 3 medium dropouts
+fashion_model_D_3 = Sequential()
+fashion_model_D_3.add(Conv2D(32,
+ kernel_size=(3, 3),activation='linear',padding='same',input_shape=(28,28,1)))
+fashion_model_D_3.add(LeakyReLU(alpha=0.1))
+fashion_model_D_3.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model_D_3.add(Dropout(0.4))
+fashion_model_D_3.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+fashion_model_D_3.add(LeakyReLU(alpha=0.1))
+fashion_model_D_3.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_3.add(Dropout(0.4))
+fashion_model_D_3.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+fashion_model_D_3.add(LeakyReLU(alpha=0.1))                  
+fashion_model_D_3.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_3.add(Dropout(0.6))
+fashion_model_D_3.add(Flatten())
+fashion_model_D_3.add(Dense(128, activation='linear'))
+fashion_model_D_3.add(LeakyReLU(alpha=0.1))           
+fashion_model_D_3.add(Dropout(0.45))
+fashion_model_D_3.add(Dense(num_classes, activation='softmax'))
+
+# model with Dropouts 3 smallest dropouts
+fashion_model_D_4 = Sequential()
+fashion_model_D_4.add(Conv2D(32, 
+kernel_size=(3, 3),activation='linear',padding='same',input_shape=(28,28,1)))
+fashion_model_D_4.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model_D_4.add(Dropout(0.1))
+fashion_model_D_4.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+fashion_model_D_4.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_4.add(Dropout(0.1))
+fashion_model_D_4.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+fashion_model_D_4.add(LeakyReLU(alpha=0.1))                  
+fashion_model_D_4.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_4.add(Dropout(0.2))
+fashion_model_D_4.add(Flatten())
+fashion_model_D_4.add(Dense(128, activation='linear'))
+fashion_model_D_4.add(LeakyReLU(alpha=0.1))           
+fashion_model_D_4.add(Dropout(0.15))
+fashion_model_D_4.add(Dense(num_classes, activation='softmax'))
+
+fashion_model_3 = Sequential()
+fashion_model_3.add(Conv2D(32,
+ kernel_size=(3, 3),activation='linear',input_shape=(28,28,1),padding='same'))
+fashion_model_3.add(LeakyReLU(alpha=0.1))
+fashion_model_3.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model_3.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+fashion_model_3.add(LeakyReLU(alpha=0.1))
+fashion_model_3.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_3.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+fashion_model_3.add(LeakyReLU(alpha=0.1))
+fashion_model_3.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_3.add(Flatten())
+fashion_model_3.add(Dense(128, activation='linear'))
+fashion_model_3.add(LeakyReLU(alpha=0.1))
+fashion_model_3.add(Dense(num_classes, activation='softmax'))
+
+fashion_model_D_4 = Sequential()
+fashion_model_D_4.add(Conv2D(32,
+ kernel_size=(3, 3),activation='linear',padding='same',input_shape=(28,28,1)))
+fashion_model_D_4.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model_D_4.add(Dropout(0.1))
+fashion_model_D_4.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+fashion_model_D_4.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_4.add(Dropout(0.1))
+fashion_model_D_4.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+fashion_model_D_4.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_4.add(Dropout(0.2))
+fashion_model_D_4.add(Flatten())
+fashion_model_D_4.add(Dense(128, activation='linear'))
+fashion_model_D_4.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4.add(Dropout(0.15))
+fashion_model_D_4.add(Dense(num_classes, activation='softmax'))
+
+fashion_model_D = Sequential()
+fashion_model_D.add(Conv2D(32, 
+kernel_size=(3, 3),activation='linear',padding='same',input_shape=(28,28,1)))
+fashion_model_D.add(LeakyReLU(alpha=0.1))
+fashion_model_D.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model_D.add(Dropout(0.25))
+fashion_model_D.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+fashion_model_D.add(LeakyReLU(alpha=0.1))
+fashion_model_D.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D.add(Dropout(0.25))
+fashion_model_D.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+fashion_model_D.add(LeakyReLU(alpha=0.1))
+fashion_model_D.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D.add(Dropout(0.4))
+fashion_model_D.add(Flatten())
+fashion_model_D.add(Dense(128, activation='linear'))
+fashion_model_D.add(LeakyReLU(alpha=0.1))
+fashion_model_D.add(Dropout(0.3))
+fashion_model_D.add(Dense(num_classes, activation='softmax'))
+
+fashion_model_5 = Sequential()
+fashion_model_5.add(Conv2D(32,
+kernel_size=(3, 3),activation='linear',input_shape=(28,28,1),padding='same'))
+fashion_model_5.add(LeakyReLU(alpha=0.1))
+fashion_model_5.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model_5.add(Conv2D(64, (3, 3), activation='linear',padding='same'))
+fashion_model_5.add(LeakyReLU(alpha=0.1))
+fashion_model_5.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_5.add(Conv2D(128, (3, 3), activation='linear',padding='same'))
+fashion_model_5.add(LeakyReLU(alpha=0.1))
+fashion_model_5.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_5.add(Flatten())
+fashion_model_5.add(Dense(128, activation='linear'))
+fashion_model_5.add(LeakyReLU(alpha=0.1))
+fashion_model_5.add(Dense(num_classes, activation='softmax'))
+
+fashion_model_D_4_selu = Sequential()
+fashion_model_D_4_selu.add(Conv2D(32, 
+kernel_size=(3, 3),activation='linear',padding='same',input_shape=(28,28,1)))
+fashion_model_D_4_selu.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4_selu.add(MaxPooling2D((2, 2),padding='same'))
+fashion_model_D_4_selu.add(Dropout(0.1))
+fashion_model_D_4_selu.add(Conv2D(64, (3, 3), activation='selu',padding='same'))
+fashion_model_D_4_selu.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4_selu.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_4_selu.add(Dropout(0.1))
+fashion_model_D_4_selu.add(Conv2D(128, (3, 3), activation='selu',padding='same'))
+fashion_model_D_4_selu.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4_selu.add(MaxPooling2D(pool_size=(2, 2),padding='same'))
+fashion_model_D_4.add(Dropout(0.2))
+fashion_model_D_4_selu.add(Flatten())
+fashion_model_D_4_selu.add(Dense(128, activation='selu'))
+fashion_model_D_4_selu.add(LeakyReLU(alpha=0.1))
+fashion_model_D_4_selu.add(Dropout(0.15))
+fashion_model_D_4_selu.add(Dense(num_classes, activation='softmax'))
